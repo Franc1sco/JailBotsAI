@@ -1,21 +1,9 @@
 #pragma semicolon 1
 #include <sourcemod>
 #include <sdktools>
+#include <smartjaildoors>
 
 new tiempo;
-new iEnt;
-new String:EntityList[][] = {
-	
-	"func_door",
-	"func_rotating",
-	"func_door_rotating",
-	"func_movelinear",
-	"prop_door",
-	"prop_door_rotating",
-	"func_tracktrain",
-	"func_elevator",
-	"\0"
-};
 
 new Handle:eltimer = INVALID_HANDLE;
 new Handle:Cvar_Tiempo = INVALID_HANDLE;
@@ -25,8 +13,8 @@ public Plugin:myinfo =
 	name = "SM Jail Bots Doors Opener",
 	author = "Franc1sco steam: franug",
 	description = ".",
-	version = "2.0",
-	url = "http://www.clanuea.com/"
+	version = "3.0",
+	url = "http://steamcommunity.com/id/franug/"
 };
 
 public OnPluginStart()
@@ -75,7 +63,5 @@ public Action:contador(Handle:timer, Handle:pack)
 
 Abrir()
 {
-    for(new i = 0; i < sizeof(EntityList); i++)
-        while((iEnt = FindEntityByClassname(iEnt, EntityList[i])) != -1)
-            AcceptEntityInput(iEnt, "Open");
+    SJD_OpenDoors(); 
 }

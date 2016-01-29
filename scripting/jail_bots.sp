@@ -6,14 +6,13 @@
 #include <botattackcontrol>
 #include <hosties>
 #include <lastrequest>
-#include <colors>
 #include <jailbots>
 
 
 new Handle:hOnClientRebel = INVALID_HANDLE;
 
 
-#define PLUGIN_VERSION "2.0"
+#define PLUGIN_VERSION "3.0"
 
 enum listado
 {
@@ -30,7 +29,7 @@ public Plugin:myinfo =
 	author = "Franc1sco steam: franug",
 	description = ".",
 	version = PLUGIN_VERSION,
-	url = "http://www.clanuea.com/"
+	url = "http://steamcommunity.com/id/franug/"
 };
 
 public OnPluginStart()
@@ -53,9 +52,14 @@ public Action:PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(GetClientTeam(attacker) == 3 && GetClientTeam(client) == 2 && g_MatrixArray[attacker][client][rebelado])
 	{
 		if(!g_MatrixArray[attacker][client][rebelado])
-			CPrintToChatAllEx(attacker, "{teamcolor}%N{default} :  %N I'm sorry, I killed you because you were in the middle", attacker, client);
+			FakeClientCommand(attacker, "say %N I'm sorry, I killed you because you were in the middle", client);
 		else if(!StrEqual(g_MatrixArray[attacker][client][frase], "none"))
-			CPrintToChatAllEx(attacker, "{teamcolor}%N{default} :  %N %s", attacker, client, g_MatrixArray[attacker][client][frase]);
+			FakeClientCommand(attacker, "say %N %s", client, g_MatrixArray[attacker][client][frase]);
+			
+		for(new i = 1; i <= MaxClients; i++)
+		{
+			g_MatrixArray[i][client][rebelado] = false;
+		}
 	}
 }
 
@@ -64,7 +68,6 @@ public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if(IsFakeClient(client))
 	{
-		OnlyCT(client);
 		return;
 	}
 	
@@ -75,25 +78,24 @@ public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 
 }
 
-OnlyCT(client)
-{
-	if(GetClientTeam(client) == 2)
-	{
-		CS_SwitchTeam(client, 3);
-		CS_RespawnPlayer(client);
-	}
-}
-
 public Action:OnShouldBotAttackPlayer(bot, player, &bool:result)
 {
-	if(!result) return Plugin_Continue; // no le atacara de todos modos (a uno del equipo)
-	
-	if(g_MatrixArray[bot][player][rebelado] && !IsClientInLastRequest(player))
+	if(!result)
 	{
-		return Plugin_Continue;
+		return Plugin_Continue; // no le atacara de todos modos (a uno del equipo)
 	}
-	result = false;
-	return Plugin_Changed;
+	
+	if(IsClientInLastRequest(player))
+	{
+		result = false;
+		return Plugin_Changed;
+	}
+	if(!g_MatrixArray[bot][player][rebelado] && GetClientTeam(bot) == CS_TEAM_CT)
+	{
+		result = false;
+		return Plugin_Changed;
+	}
+	return Plugin_Continue;
 }
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
@@ -114,7 +116,7 @@ stock MakeRebel(bot, player, String:now[192], String:OnDead[192])
 	Call_Finish();
 	
 	if(!StrEqual(now, "none"))
-		CPrintToChatAllEx(bot, "{teamcolor}%N{default} :  %N %s", bot, player, now);
+		FakeClientCommand(bot, "say %N %s", player, now);
 	
 	Format(g_MatrixArray[bot][player][frase], 192, OnDead);
 	g_MatrixArray[bot][player][rebelado] = true;
@@ -151,7 +153,7 @@ public Native_MakeNoRebel(Handle:plugin, argc)
 	
 	GetNativeString(3, now3, 192);
 	if(!StrEqual(now3, "none"))
-		CPrintToChatAllEx(bot, "{teamcolor}%N{default} :  %N %s", bot, player, now3);
+		FakeClientCommand(bot, "say %N %s", player, now3);
 	
 	g_MatrixArray[bot][player][rebelado] = false;
 }

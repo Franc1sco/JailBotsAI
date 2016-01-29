@@ -12,7 +12,7 @@ public Plugin:myinfo =
 	author = "Franc1sco steam: franug",
 	description = ".",
 	version = "2.0",
-	url = "http://www.clanuea.com/"
+	url = "http://steamcommunity.com/id/franug/"
 };
 
 public OnPluginStart()
