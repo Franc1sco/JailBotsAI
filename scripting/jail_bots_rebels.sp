@@ -50,7 +50,7 @@ public Action:Event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 	//PrintToChat(attacker, "pasado");
 	Handle pack;
-	CreateDataTimer(0.7, Pasadohurt, pack);
+	CreateDataTimer(0.7, Endhurt, pack);
 	WritePackCell(pack, GetEventInt(event, "attacker"));
 	WritePackCell(pack, GetEventInt(event, "userid"));
 	
@@ -62,7 +62,7 @@ public Action noatacarp(Handle timer, int client)
 	timers[client] = INVALID_HANDLE;
 }
 
-public Action Pasadohurt(Handle timer, Handle pack)
+public Action Endhurt(Handle timer, Handle pack)
 {
 	//unpack into
 	new client;
@@ -76,7 +76,7 @@ public Action Pasadohurt(Handle timer, Handle pack)
 	//PrintToChat(client, "pasado2");
 	for(new i = 1; i <= MaxClients; i++)
 	{
-		if(IsClientInGame(i) && IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_CT && IsPlayerAlive(i) && !JBOT_IsRebel(i, client) && PuedeVerAlOtro(i, client))
+		if(IsClientInGame(i) && IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_CT && IsPlayerAlive(i) && !JBOT_IsRebel(i, client) && CanSeeOther(i, client))
 		{
 			if(atacado == i)
 				JBOT_MakeRebel(i, client, "I've seen you attacking me so you're gonna die!", "I killed you because I saw you attacking me with your gun");
@@ -87,7 +87,7 @@ public Action Pasadohurt(Handle timer, Handle pack)
 	}
 }
 
-public Action Pasadofire(Handle timer, Handle pack)
+public Action Endfire(Handle timer, Handle pack)
 {
 	//unpack into
 	new client;
@@ -100,7 +100,7 @@ public Action Pasadofire(Handle timer, Handle pack)
 
 	for(new i = 1; i <= MaxClients; i++)
 	{
-		if(IsClientInGame(i) && IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_CT && IsPlayerAlive(i) && !JBOT_IsRebel(i, client) && PuedeVerAlOtro(i, client))
+		if(IsClientInGame(i) && IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_CT && IsPlayerAlive(i) && !JBOT_IsRebel(i, client) && CanSeeOther(i, client))
 		{
 
 			JBOT_MakeRebel(i, client, "I've seen you shoot a gun so you gonna die!", "I killed you because I saw you attack with your gun");
@@ -132,13 +132,13 @@ public Action:EventWeaponFire(Handle:event,const String:name[],bool:dontBroadcas
 		
 
 			Handle pack;
-			CreateDataTimer(0.6, Pasadofire, pack);
+			CreateDataTimer(0.6, Endfire, pack);
 			WritePackCell(pack, GetEventInt(event, "userid"));
 		}
 	}
 }
 
-public Action Pasadod(Handle timer, Handle pack)
+public Action Enddead(Handle timer, Handle pack)
 {
 	//unpack into
 	new client;
@@ -156,7 +156,7 @@ public Action Pasadod(Handle timer, Handle pack)
 		//PrintToChatAll("hecho a ver xd");
 		for(new i = 1; i <= MaxClients; i++)
 		{
-			if(IsClientInGame(i) && IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_CT && IsPlayerAlive(i) && i != client && !JBOT_IsRebel(i, attacker) && PuedeVerAlOtro(i, attacker))
+			if(IsClientInGame(i) && IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_CT && IsPlayerAlive(i) && i != client && !JBOT_IsRebel(i, attacker) && CanSeeOther(i, attacker))
 			{
 				//PrintToChatAll("hecho2");
 				JBOT_MakeRebel(i, attacker, "I've seen you kill a CT so you gonna die!", "I killed you because I saw you kill to a CT");
@@ -172,24 +172,24 @@ public Action:PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(IsClientInLastRequest(attacker) || timers[attacker] != INVALID_HANDLE) return;
 	
 	Handle pack;
-	CreateDataTimer(0.4, Pasadod, pack);
+	CreateDataTimer(0.4, Enddead, pack);
 	WritePackCell(pack, GetEventInt(event, "attacker"));
 	WritePackCell(pack, GetEventInt(event, "userid"));
 }
 
-stock bool:PuedeVerAlOtro(visionario, es_visto, Float:distancia = 0.0, Float:altura_visionario = 50.0)
+stock bool:CanSeeOther(index, target, Float:distance = 0.0, Float:Height = 50.0)
 {
 
-		new Float:vMonsterPosition[3], Float:vTargetPosition[3];
+		new Float:Position[3], Float:vTargetPosition[3];
 		
-		GetEntPropVector(visionario, Prop_Send, "m_vecOrigin", vMonsterPosition);
-		vMonsterPosition[2] += altura_visionario;
+		GetEntPropVector(index, Prop_Send, "m_vecOrigin", Position);
+		Position[2] += Height;
 		
-		GetClientEyePosition(es_visto, vTargetPosition);
+		GetClientEyePosition(target, vTargetPosition);
 		
-		if (distancia == 0.0 || GetVectorDistance(vMonsterPosition, vTargetPosition, false) < distancia)
+		if (distance == 0.0 || GetVectorDistance(Position, vTargetPosition, false) < distance)
 		{
-			new Handle:trace = TR_TraceRayFilterEx(vMonsterPosition, vTargetPosition, MASK_SOLID_BRUSHONLY, RayType_EndPoint, Base_TraceFilter);
+			new Handle:trace = TR_TraceRayFilterEx(Position, vTargetPosition, MASK_SOLID_BRUSHONLY, RayType_EndPoint, Base_TraceFilter);
 
 			if(TR_DidHit(trace))
 			{
